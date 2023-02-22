@@ -1,0 +1,34 @@
+################################################################################
+# Filename:    SConscript                                                      #
+# License:     Public Domain                                                   #
+# Author:      New Rupture Systems                                             #
+# Description: Build an interactive 'Hello World' program.                     #
+################################################################################
+Import("module")
+Import("common_cfg")
+
+
+def build(env):
+   # Setup compiler specific flags
+   if ((env.subst("$CC") == "gcc") and
+       (env["DEBUG"])):
+      env.Append(CFLAGS = ["-Og", "-g"])
+
+   # Add program
+   hello = env.Program("ihello", "ihello.c")
+
+   # Build program by default)
+   Default(hello)
+
+   # Add module output (from program)
+   env.ModuleOutput(BIN = hello)
+
+
+def install(outputs):
+   # Default install of output is fine
+   pass
+
+
+module.Define(BUILD = build,
+              INSTALL = install,
+              inherit = common_cfg)

@@ -1,0 +1,94 @@
+################################################################################
+# Filename:    SConscript                                                      #
+# License:     Public Domain                                                   #
+# Author:      New Rupture Systems                                             #
+# Description: Build the classic Hello World program.                          #
+################################################################################
+Import("module")
+
+submodules = (("ihello", Dir("ihello"), "Interactive Hello World program"),)
+
+
+def options(opts, vars):
+   opts.Add("phrase", dest = "hello-phrase", metavar = "STRING",
+            help = "Output instead of 'Hello World'")
+   vars.Add(BoolVariable("ADD_EXCLAMATION",
+            help = "Add an exclamation point to output string",
+            default = False))
+
+
+def configuration(conf):
+   cc = conf.FindComponent(name = "C Compiler",
+                           component = "CC",
+                           check = conf.CheckCC)
+   link = conf.FindComponent(name = "C Linker",
+                             component = "LINK",
+                             check = conf.CheckLink,
+                             depends = cc)
+
+
+def build(env):
+   # Pass on options/variables
+   if module.Options["hello-phrase"] is not None:
+      phrase = module.Options["hello-phrase"]
+      env.Append(CPPDEFINES = [("PHRASE", str(phrase))])
+   if module.Variables["ADD_EXCLAMATION"]:
+      env.Append(CPPDEFINES = ["EXCLAIM"])
+
+   # Setup compiler specific flags
+   if env.subst("$CC") == "gcc":
+      env.Append(CFLAGS = ["-pedantic", "-std=c89", "-Wall", "-Wfatal-errors"])
+      if env["DEBUG"]:
+         env.Append(CFLAGS = ["-Og", "-g"])
+      else:
+         env.Append(CFLAGS = ["-O2", "-ffunction-sections", "-fdata-sections"])
+
+   # Add objects (from source files)
+   objects = [env.Object("hello.c")]
+
+   # Apply linker specific flags
+   if env.subst("$LINK") == "ld" or env.subst("$LINK") == "gcc":
+      if env["TARGET_OS"] == "GNU/Linux":
+         env.Append(LINKFLAGS = ["-z" + "origin"])
+         env.Append(RPATH = env.Literal("\\$$ORIGIN"))
+      if not env["DEBUG"]:
+         env.Append(LINKFLAGS = ["--gc-sections", "-s"])
+
+      if env.subst("$LINK") == "gcc":
+         env.Replace(LINKFLAGS = ["-Wl," + flag for flag in env["LINKFLAGS"]])
+
+   # Add program (from objects)
+   hello = env.Program("hello", objects)
+
+   # Build program by default
+   env.Default(hello)
+
+   # Add module output (from program)
+   env.ModuleOutput(BIN = hello, name="hello")
+
+
+def test(outputs):
+   SConscript(File("tests.py"), exports = "outputs")
+
+
+def install(outputs):
+   # Install as "hello" and "Hello"
+   outputs["hello"].Install(name = "Hello")
+   outputs["hello"].Install(True, "hello")
+
+
+def doc_install(outputs):
+   module.Installables.Add(DOC = "README")
+
+
+module.DefineSubmodule("doc", "Documentation",
+                       INSTALL = doc_install)
+module.DeclareSubmodule(submodules)
+module.Define(OPTIONS = options,
+              CONFIGURATION = configuration,
+              BUILD = build,
+              TEST = test,
+              INSTALL = install)
+
+common_cfg = module.Export("CONFIGURATION")
+Export("common_cfg")

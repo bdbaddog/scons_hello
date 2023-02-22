@@ -1,0 +1,32 @@
+################################################################################
+# Filename:    SConscript                                                      #
+# License:     Public Domain                                                   #
+# Author:      New Rupture Systems                                             #
+# Description: Build 'Goodbye World', a companion program to 'Hello World'.    #
+################################################################################
+Import("module")
+
+
+def configure(conf):
+   cc = conf.FindComponent(name = "C Compiler",
+                           component = "CC",
+                           check = conf.CheckCC)
+   link = conf.FindComponent(name = "C Linker",
+                             component = "LINK",
+                             check = conf.CheckLink,
+                             depends = cc)
+
+
+def build(env):
+   # Setup compiler specific flags
+   if ((env.subst("$CC") == "gcc") and
+       (env["DEBUG"])):
+      env.Append(CFLAGS = ["-Og", "-g"])
+
+   # Add program (built by default)
+   Default(env.Program("goodbye", "goodbye.c"))
+
+
+module.Define(CONFIGURATION = configure,
+              BUILD = build)
+
