@@ -1,13 +1,12 @@
-# scons_hello
-
 This is a GitHub mirror of the [scons_hello repository](https://chiselapp.com/user/simplejack/repository/scons_hello/home).
 
+---
 
-##BuildMeUp
+## BuildMeUp
 
 Hey Buttercup, let me tell you of an over-complicated SCons 'Hello World!'.
 
-##Why?
+## Why?
 
 I wanted to demonstrate some tools I wrote for SCons that assist me in building my projects. I wrote these tools with the following criteria in mind:
 
@@ -16,7 +15,7 @@ I wanted to demonstrate some tools I wrote for SCons that assist me in building 
 * Be consistent (i.e. minimal changes needed to fill in a new project template)
 * Portability (i.e. Structure such that future extensability is natural)
 
-##What?
+## What?
 
 SCons tools (copied to an appropriate location and invoked as any other Tool):
 
